@@ -110,129 +110,201 @@ THE SOFTWARE.
       }
     </style>
     <script>
-      protocol_hash = {
-          "Ethernet": 14,
-          "802.1q VLAN": 4,
-          "802.1ad QinQ": 4,
-          "MPLS": 4,
-          "PPPoE": 8,
-          "IPv4": 20,
-          "IPv6": 40,
-          "GRE": 4,
-          "GRE key/sequence number": 8,
-          "UDP": 8,
-          "TCP": 20,
-          "VXLAN (IPv4+UDP+VXLAN+Ethernet)": 50,
-          "NVGRE": 42,
-          "STT": 54,
-          "ESP (96 bit HMAC)": 38,
-          "AH (96 bit HMAC)": 24,
-          "GTPv0-U": 20,
-          "GTPv1-U": 8,
-          "GTPv1-U (with sequence/N-PDU numbers)": 12
+      var protocols = {
+          "Ethernet": {
+            "name": "Ethernet",
+            "overhead": 14,
+            "href": "https://en.wikipedia.org/wiki/Internet_Protocol"},
+          "802.1q VLAN": {
+            "name": "802.1q VLAN",
+            "overhead": 4,
+            "href":"https://en.wikipedia.org/wiki/IEEE_802.1Q"},
+          "802.1ad QinQ":{
+            "name": "802.1ad QinQ",
+            "overhead": 4,
+            "href": "https://en.wikipedia.org/wiki/IEEE_802.1ad"},
+          "MPLS": {
+            "name": "MPLS",
+            "overhead": 4,
+            "href": "https://en.wikipedia.org/wiki/Multiprotocol_Label_Switching"},
+          "PPPoE": {
+              "name": "PPPoE",
+              "overhead": 8,
+              "href": "https://en.wikipedia.org/wiki/Point-to-Point_Protocol_over_Ethernet"},
+          "IPv4": {
+              "name": "IPv4",
+              "overhead": 20,
+              "href": "https://en.wikipedia.org/wiki/IPv4"},
+          "IPv6": {
+              "name": "IPv6",
+              "overhead": 40,
+              "href": "https://en.wikipedia.org/wiki/IPv6"},
+          "GRE": {
+              "name": "GRE",
+              "overhead": 4,
+              "href": "https://en.wikipedia.org/wiki/Generic_Routing_Encapsulation"},
+          "GRE key/sequence number": {
+              "name": "GRE key/sequence number",
+              "overhead": 8,
+              "href": "https://en.wikipedia.org/wiki/Generic_Routing_Encapsulation"},
+          "UDP": {
+              "name": "UDP",
+              "overhead": 8,
+              "href": "https://en.wikipedia.org/wiki/User_Datagram_Protocol"},
+          "TCP": {
+              "name": "TCP",
+              "overhead": 20,
+              "href": "https://en.wikipedia.org/wiki/Transmission_Control_Protocol"},
+          "VXLAN (IPv4+UDP+VXLAN+Ethernet)": {
+              "name": "VXLAN (IPv4+UDP+VXLAN+Ethernet)",
+              "overhead": 50,
+              "href": "https://en.wikipedia.org/wiki/Virtual_Extensible_LAN"},
+          "NVGRE": {
+              "name": "NVGRE",
+              "overhead": 42,
+              "href": "https://en.wikipedia.org/wiki/Network_Virtualization_using_Generic_Routing_Encapsulation"},
+          "STT": {
+              "name": "STT",
+              "overhead": 54},
+          "ESP (96 bit HMAC)": {
+              "name": "ESP (96 bit HMAC)",
+              "overhead": 38,
+              "href": "",
+          },
+          "AH (96 bit HMAC)": {
+              "name": "AH (96 bit HMAC)",
+              "overhead": 24,
+              "href": "",
+          },
+          "GTPv0-U": {
+              "name": "GTPv0-U",
+              "overhead": 20,
+              "href": "",
+          },
+          "GTPv1-U": {
+              "name": "GTPv1-U",
+              "overhead": 8,
+              "href": "http://www.tech-invite.com/3m29/tinv-3gpp-29-281.html",
+          },
+          "GTPv1-U (with sequence/N-PDU numbers)": {
+              "name": "GTPv1-U (with sequence/N-PDU numbers)",
+              "overhead": 12,
+              "href": "http://www.tech-invite.com/3m29/tinv-3gpp-29-281.html",
+          }
       };
 
-      function calculate_overhead()
+      function calculate_overhead(protos)
       {
-          mtu = document.getElementById("parent-mtu").value;
+          var mtu = Number(document.getElementById("parent-mtu").value);
+          var selection = document.getElementsByClassName("protocol-text");
+          var mode = document.ifaceoptions.mode.value;
+          var overhead = 0;
+          var pdu = 0;
 
-          protocols = document.getElementsByClassName("protocol-name");
-
-          overhead = 0;
-
-          for(var i = 0; i < protocols.length; i++)
+          for(var i = 0; i < selection.length; i++)
           {
-             overhead = overhead + protocol_hash[protocols[i].innerHTML];
+             var p = selection[i];
+             var key = p.getAttribute('data-proto');
+             overhead = overhead + protos[key].overhead;
           }
-
-          mode = document.ifaceoptions.mode.value;
 
           if(mode == "sub")
           {
-              pdu = Number(mtu) - Number(overhead);
+              pdu = mtu - Number(overhead);
           }
           else
           {
-              pdu = Number(mtu) + Number(overhead);
+              pdu = mtu + Number(overhead);
           }
 
           document.getElementById("overhead").innerHTML = overhead + " bytes";
           document.getElementById("tunnel-mtu").innerHTML = pdu + " bytes" ;
-
       }
 
-      function generate_proto_form()
+      function generate_proto_form(protos)
       {
-          protocol_list = document.getElementById("protocol-list");
+          var protocol_list = document.getElementById("protocol-list");
 
-          for( protocol_name in protocol_hash )
+          for( var key in protos )
           {
-              button = document.createElement("input");
-              button.setAttribute('type', 'button');
-              button.setAttribute('onclick', 'add_protocol(this.value)');
-              button.setAttribute('value', protocol_name);
-              button.setAttribute('class', 'protocol-button');
-              
-              protocol_list.appendChild(button);
+              var proto = protos[key];
+              var p = document.createElement("div");
+              p.setAttribute('onclick', 'select_protocol("'+key+'")');
+              p.setAttribute('class', 'protocol-button');
+              p.innerHTML = '<span>' + proto.name + '</span>';
+              if (proto.href)
+              {
+                  p.innerHTML += '&nbsp;<a href="' + proto.href + '"> # </a>'
+              }
+              protocol_list.appendChild(p);
           }
       }
 
-      function add_protocol(name)
+      // small helper to generate unique ids
+      var generate_id = (function(){
+        var s = 0;
+        return function(prefix) {
+          s += 1;
+          return prefix + s;
+        }
+      })();
+
+      function select_protocol(key)
       {
-          serial = document.getElementById("serial");
+          var proto = protocols[key];
+          var selection = document.getElementById('protocols');
+          var id = generate_id('proto-');
 
-          protocols = document.getElementById('protocols');
+          var content = '<div data-proto="'+ key +'" class="protocol-text"> <span class="protocol-name">' + proto.name + '</span> (' + proto.overhead + ' bytes) </div>';
+          content += '<div class="remove-button"> <input type="button" value="Remove" onclick="deselect_protocol(\'' + id + '\')"/> </div>';
 
-          protocol_wrapper = document.createElement('div');
-          protocol_wrapper.setAttribute('class', 'protocol-block-wrapper');
-          protocol_wrapper.setAttribute('id', serial.value);
+          var pwrap = document.createElement('div');
+          pwrap.setAttribute('class', 'protocol-block-wrapper');
+          pwrap.setAttribute('id', id);
 
-          protocol = document.createElement('div');
-          protocol.setAttribute('class', 'protocol-block');
+          var p = document.createElement('div');
+          p.setAttribute('class', 'protocol-block');
+          p.innerHTML = content;
 
-          protocol_wrapper.appendChild(protocol); 
+          pwrap.appendChild(p);
+          selection.appendChild(pwrap);
 
-          content = "<div class='protocol-text'> <span class='protocol-name'>" + name + "</span> (" + protocol_hash[name] + " bytes) </div>";
-          content += "<div class='remove-button'> <input type='button' value='Remove' onclick='remove_element(" + serial.value + ")'/> </div>";
-          protocol.innerHTML = content;
-          
-          protocols.appendChild(protocol_wrapper);
-         
-
-          document.getElementById("serial").value = parseInt(serial.value) + 1;
-
-          calculate_overhead();
-
+          calculate_overhead(protocols);
       }
 
-      function remove_element(id)
+      function deselect_protocol(id)
       {
-          element = document.getElementById(id);
-          element.parentNode.removeChild(element);
-
-          calculate_overhead();
+          var p = document.getElementById(id);
+          p.parentNode.removeChild(p);
+          calculate_overhead(protocols);
       }
 
       function set_mode_add()
       {
           document.getElementById("mtu-desc").innerHTML = "Payload size: ";
-          document.getElementById("result-desc").innerHTML = "Frame size: "
+          document.getElementById("result-desc").innerHTML = "Frame size: ";
+          calculate_overhead(protocols);
       }
 
       function set_mode_substract()
       {
        	  document.getElementById("mtu-desc").innerHTML	= "Parent interface MTU: ";
-          document.getElementById("result-desc").innerHTML = "Maximum PDU size: "
+          document.getElementById("result-desc").innerHTML = "Maximum PDU size: ";
+          calculate_overhead(protocols);
+      }
+
+      function init(proto)
+      {
+        generate_proto_form(proto);
+        calculate_overhead(proto);
       }
     </script>
   </head>
-  <body onload="generate_proto_form(); calculate_overhead();">
+  <body onload="init(protocols)">
     <div class="wrapper">
       <div class="content">
         <h1> Encapsulation overhead calculator </h1>
         <div class="protocol-form">
-              <!-- Dirty hack to ensure protocol block uniqueness -->
-              <input id="serial" type="hidden" value="0" />
               <div id="protocol-list">
                 <!-- Generated content here -->
               </div>
@@ -240,13 +312,13 @@ THE SOFTWARE.
       </div>
       <div class="box-wrapper">
       <form name="ifaceoptions">
-          <span id="mtu-desc">Parent interface MTU: </span> <input type="text" value="1500" id="parent-mtu" oninput="calculate_overhead()" />
+          <span id="mtu-desc">Parent interface MTU: </span> <input type="text" value="1500" id="parent-mtu" oninput="calculate_overhead(protocols)" />
           <br />
           <span>Calculation mode:</spam>
           <br />
-          <input name="mode" type="radio" value="sub" checked="checked" onchange="set_mode_substract(); calculate_overhead()"> PDU size (substract overhead from MTU)
+          <input name="mode" type="radio" value="sub" checked="checked" onchange="set_mode_substract();"> PDU size (substract overhead from MTU)
           <br />
-          <input name="mode" type="radio" value="add" onchange="set_mode_add(); calculate_overhead()"> Frame size (add overhead to payload size)
+          <input name="mode" type="radio" value="add" onchange="set_mode_add();"> Frame size (add overhead to payload size)
       </form>
       </div>
       <div class="box-wrapper">
