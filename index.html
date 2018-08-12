@@ -29,72 +29,84 @@ THE SOFTWARE.
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Encapsulation overhead calculator</title>
     <style>
-
-     .protocol-form
-     {
-         float: left;
-         width: 30%;
-     }
+      html * {
+        font-family: sans-serif;
+      }
+      .protocol-form
+      {
+        float: left;
+        width: 30%;
+      }
 
       .box-wrapper
       {
-          width: 60%;
-          float: left;
-          border: #dadada solid 1px;
-          margin-bottom: 30px;
-          padding: 10px;
+        width: 60%;
+        float: left;
+        border: #dadada solid 1px;
+        margin-bottom: 30px;
+        padding: 10px;
       }
 
       .notes { width: 100%; float: left; }
 
       .wrapper
       {
-          max-width: 1000px;
-          margin: 0 auto;
+        max-width: 1000px;
+        margin: 0 auto;
       }
 
       .protocol-block-wrapper
       {
-          float: left;
-          width: 100%;
-          margin-top: 15px;
+        float: left;
+        width: 100%;
+        margin-top: 15px;
       }
 
       .protocol-block
       {
-          width: 80%;
-          border: #0990BD solid 1px;
-          background-color: #E3ECEF;
-          padding: 10px;
-          float: left;
-          margin-left: 10%;
-          margin-right: auto;
-       }
+        width: 80%;
+        border: #0990BD solid 1px;
+        background-color: #E3ECEF;
+        padding: 10px;
+        float: left;
+        margin-left: 10%;
+        margin-right: auto;
+        -webkit-border-radius: 3px;
+        -moz-border-radius: 3px;
+        border-radius: 3px;
+      }
 
       .protocol-button
       {
-          width: 80%;
-          margin-bottom: 3%;
-          padding: 1%;
+        width: 80%;
+        margin-bottom: 3%;
+        padding: 1%;
+        background: #E3ECEF;
+        border: 1px solid #0990BD;
+        -webkit-border-radius: 3px;
+        -moz-border-radius: 3px;
+        border-radius: 3px;
+        text-align: center;
+        cursor: copy;
       }
 
       .protocol-text
       {
-          float: left;
+        float: left;
       }
 
       .remove-button
       {
-          float: right;
+        float: right;
       }
 
       .copyright
       {
-          float: left;
-          width: 100%;
-          text-align: center;
-          padding-top: 20px;
-          margin-bottom: 20px;
+        float: left;
+        width: 100%;
+        text-align: center;
+        padding-top: 20px;
+        margin-bottom: 20px;
       }
     </style>
     <script>
